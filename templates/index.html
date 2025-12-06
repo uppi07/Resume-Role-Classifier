@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Role Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050915;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-strong: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.12);
+      --muted: #cad3e7;
+      --text: #f3f5fb;
+      --accent: #7cf8d4;
+      --accent-2: #fcb564;
+      --danger: #ff7b7b;
+      --shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(1200px at 10% 10%, rgba(252, 181, 100, 0.12), transparent 45%),
+                  radial-gradient(900px at 80% 0%, rgba(124, 248, 212, 0.15), transparent 40%),
+                  linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+      filter: drop-shadow(0 0 40px rgba(0, 0, 0, 0.2));
+    }
+
+    .shell {
+      width: min(1100px, 92vw);
+      margin: 60px auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      max-width: 820px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--accent);
+      background: rgba(124, 248, 212, 0.08);
+      padding: 8px 12px;
+      border: 1px solid rgba(124, 248, 212, 0.35);
+      border-radius: 999px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 12px;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .panel {
+      margin-top: 26px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      background: var(--panel-strong);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-family: "Space Grotesk", "Helvetica Neue", sans-serif;
+      font-size: 15px;
+      resize: vertical;
+      outline: none;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(124, 248, 212, 0.7);
+      box-shadow: 0 0 0 3px rgba(124, 248, 212, 0.14);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ghost,
+    .cta {
+      border-radius: 12px;
+      border: 1px solid transparent;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .ghost {
+      background: var(--panel-strong);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .cta {
+      background: linear-gradient(135deg, #7cf8d4, #fcb564);
+      color: #031225;
+      box-shadow: 0 8px 30px rgba(124, 248, 212, 0.35);
+    }
+
+    .ghost:hover,
+    .cta:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .ghost:active,
+    .cta:active {
+      transform: translateY(0);
+      filter: brightness(0.98);
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      opacity: 0.9;
+    }
+
+    .status::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--border);
+      display: inline-block;
+    }
+
+    .status-ok::before {
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(124, 248, 212, 0.6);
+    }
+
+    .status-warn::before {
+      background: var(--danger);
+      box-shadow: 0 0 12px rgba(255, 123, 123, 0.5);
+    }
+
+    .result {
+      margin-top: 16px;
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 88px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .result .label {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .prediction {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .faded {
+      color: var(--muted);
+    }
+
+    .alert {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(255, 123, 123, 0.12);
+      border: 1px solid rgba(255, 123, 123, 0.4);
+      color: #ffdede;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .alert strong {
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-top: 24px;
+    }
+
+    .tile {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    .tile h3 {
+      margin: 0;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .tile p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .ghost,
+      .cta {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <main class="shell">
+    <section class="hero">
+      <span class="eyebrow">Resume role classifier</span>
+      <h1>Know the likely role from a single paste.</h1>
+      <p class="lede">Drop in a resume snippet and get an instant prediction from the trained TF-IDF + Logistic Regression model.</p>
+      <div class="pills">
+        <span class="pill">Bi-gram TF-IDF</span>
+        <span class="pill">Logistic Regression</span>
+        <span class="pill">Cached model load</span>
+      </div>
+    </section>
+
+    {% if not model_ready %}
+    <div class="alert">
+      <strong>Model missing.</strong>
+      Train it with <code>python src/train.py</code> and refresh.
+    </div>
+    {% endif %}
+
+    <section class="panel">
+      <form id="predict-form" class="form">
+        <div>
+          <label for="resume">Resume text</label>
+          <textarea id="resume" name="resume" placeholder="Paste bullet points, a summary, or a few lines from a resume..."></textarea>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="ghost" id="sample">Drop in a sample</button>
+          <span class="status" id="status">Waiting for input</span>
+          <button type="submit" class="cta" id="submit-btn">Predict role</button>
+        </div>
+      </form>
+      <div class="result" id="result">
+        <span class="label">Prediction</span>
+        <div class="faded">Your predicted role will land here.</div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <div class="tile">
+        <h3>How to run</h3>
+        <p>1) Install deps with <code>pip install -r requirements.txt</code>. 2) Train once via <code>python src/train.py</code>. 3) Launch this UI with <code>python app.py</code>.</p>
+      </div>
+      <div class="tile">
+        <h3>Fast feedback</h3>
+        <p>The model stays in memory after the first request so you can try multiple resumes quickly.</p>
+      </div>
+      <div class="tile">
+        <h3>Privacy-friendly</h3>
+        <p>All processing happens locally—nothing leaves your machine.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const form = document.querySelector("#predict-form");
+      const textarea = document.querySelector("#resume");
+      const status = document.querySelector("#status");
+      const result = document.querySelector("#result");
+      const sampleBtn = document.querySelector("#sample");
+      const submitBtn = document.querySelector("#submit-btn");
+      const modelReady = {{ "true" if model_ready else "false" }};
+      const sampleText = [
+        "Implemented scalable data pipelines in Airflow and Spark.",
+        "Optimized ETL jobs for a cloud warehouse and built monitoring dashboards.",
+        "Collaborated with analysts to deliver reliable data models and marts."
+      ].join(" ");
+
+      const setStatus = (text, state) => {
+        status.textContent = text;
+        status.classList.remove("status-ok", "status-warn");
+        if (state === "ok") status.classList.add("status-ok");
+        if (state === "warn") status.classList.add("status-warn");
+      };
+
+      if (!modelReady) {
+        setStatus("Model not found. Train it first.", "warn");
+        submitBtn.disabled = true;
+        submitBtn.style.cursor = "not-allowed";
+        submitBtn.style.opacity = "0.6";
+      }
+
+      sampleBtn.addEventListener("click", () => {
+        textarea.value = sampleText;
+        textarea.focus();
+        setStatus("Sample inserted. Ready to predict.", "ok");
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!modelReady) return;
+
+        const text = textarea.value.trim();
+        if (!text) {
+          setStatus("Please add resume text first.", "warn");
+          return;
+        }
+
+        setStatus("Running prediction...", null);
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Predicting...";
+
+        try {
+          const response = await fetch("/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Prediction failed");
+          }
+
+          result.innerHTML = `
+            <span class="label">Prediction</span>
+            <div class="prediction">${data.prediction}</div>
+          `;
+          setStatus("Prediction ready.", "ok");
+        } catch (err) {
+          setStatus(err.message || "Something went wrong.", "warn");
+          result.innerHTML = `
+            <span class="label">Prediction</span>
+            <div class="faded">No prediction available.</div>
+          `;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Predict role";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
